@@ -1,8 +1,41 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
+import { generateAddress } from "../lib/fakerjs"
+import { useState , useEffect } from "react"
+import { createAddress } from "../src/graphql/mutations";
+import { getAllPaginatedData } from "../src/graphql/queries";
+import { API } from "@aws-amplify/api";
 
 export default function Home() {
+  const [address, setAddress] = useState({});
+  const [listData , setlistData] = useState([])
+  const saveAddress = async () => {
+    try {
+      const result = await API.graphql({
+        query: createAddress,
+        variables: {
+          input: address,
+        },
+      });
+      getTotalCounts();
+    } catch (err) {
+      console.log(err);
+    }
+  }
+  const getTotalCounts = async () => {
+    try {
+      const {data} = await API.graphql({
+        query: getAllPaginatedData
+      });
+      setlistData(data.listAllAddress)
+    } catch (err) {
+      console.log(err);
+    }
+  } 
+  useEffect(() => {
+    getTotalCounts()
+  },[])
   return (
     <div className={styles.container}>
       <Head>
@@ -17,38 +50,21 @@ export default function Home() {
         </h1>
 
         <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
+         Total Address Count is {listData.length}
         </p>
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+        <div>
+          <button onClick={() => setAddress(generateAddress())}>
+            Generate Address
+          </button>
+          <div>
+            {
+              Object.keys(address).map((v) => (<p key={v}>{v} : {address[v]}</p>))
+            }
+          </div>
+          <button onClick={() => saveAddress()}>
+            Save Address
+          </button>
         </div>
       </main>
 

@@ -1,0 +1,10 @@
+type Address @model @key(name: "city-index", fields: ["city"], queryField: "AddressByCity") {
+  id: ID!
+  streetAddress: String!
+  city: String
+  zipCode: String
+}
+
+type Query {
+  listAllAddress : [Address] @function(name : "appsyncwithnextjs97a061d8-dev")
+}
